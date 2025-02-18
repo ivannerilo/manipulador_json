@@ -10,6 +10,9 @@ class editForm(forms.Form):
 		widget=forms.Textarea(attrs={'rows': 10, 'cols': 220}),
 	)
 
+class fileForm(forms.Form):
+    json_file = forms.fileField(upload_to="/json_files")
+
 # Create your views here.
 def index(request):
     return HttpResponseRedirect(f'/{DEFAULT_ARCHIVE_NUM}')
@@ -27,23 +30,30 @@ def show_json(request, archive_num):
             num = 0
         return HttpResponseRedirect(f'/{num}')
 
-    correct_content = []
     json = util.json_reader(archive_num)
-    correct_content = util.formatador_html(correct_content, json)
+    correct_content = util.formatador_html(json)
     return render(request, "manipulador/index.html", {
-        "correct_content": correct_content
+        "correct_content": correct_content[1:],
+        "archive_num": archive_num
     })
         
 
 def edit_json(request, archive_num):
     if request.method == 'POST':
-        return render(request, "manipulador/teste.html", {
-            "teste": request.POST
-        })
-
-    correct_form = []
+        json = util.json_reader(archive_num)
+        for i in range(len(request.POST) - 1):
+            if isinstance(json["messages"][i]["content"], list):
+                json["messages"][i]["content"][0]["text"] = request.POST[f"{i}"]
+            else:
+                json["messages"][i]["content"] = request.POST[f"{i}"]
+        util.json_writer(json)
+        return HttpResponseRedirect(f"/{archive_num}")
+        # return render(request, "manipulador/teste.html", {
+        #     "teste": json
+        # })
+    
     json = util.json_reader(archive_num)
-    correct_form = util.formatador_formulario(correct_form, json)
+    correct_form = util.formatador_formulario(json)
     return render(request, "manipulador/edit.html", {
         "correct_form": correct_form
     })

@@ -1,0 +1,10 @@
+{% extends "manipulador/layout.html" %}
+
+{% block body %}
+    <h1>Bem vindo ao manipulador de JSONL's</h1>
+    <form>
+        {% csrf_token %}
+        {{form}}
+    </form>
+    <form action="/{{ DEFAULT_ARCHIVE_NUM }}"><button type="submit">Acessar Arquivo</button></form>
+{% endblock %}
