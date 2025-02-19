@@ -3,16 +3,6 @@
         
         
 {% block body %}
-<script>
-</script>
-
-<!-- <button class="accordion">Prompt</button>
-<div class="panel">
-  <p>{{ json.messages.0.content }}</p>
-</div> -->
-    {% for content in correct_content%} 
-        {{content|safe}}
-    {% endfor %}
     <div>
         <form method="post">
             {% csrf_token %}
@@ -28,4 +18,7 @@
             <button type="submit">Edit</button>
         </form>
     </div>
+    {% for content in correct_content%} 
+        {{content|safe}}
+    {% endfor %}
 {% endblock %}

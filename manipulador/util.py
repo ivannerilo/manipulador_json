@@ -1,10 +1,20 @@
 import json 
+import re
 
 def json_reader(num):
     with open("json_files/jsonfile2.jsonl","r") as f:
         jsonfiles = list(f)
         jsonfile = json.loads(jsonfiles[num])
         return jsonfile
+
+def json_formater(data):
+    pattern = r'response_format=\s*{\s*"type":\s*"text"\s*},?'
+    data = data.replace("messages=", '{"messages": ')
+    data = re.sub(pattern, '', data)
+    data = data.replace('tools=', '"tools": ')
+    data = data.replace('"strict": False,', "")
+    data = data + '}'
+    return data
 
 def json_writer(js):
     with open("json_files/jsonfile1.jsonl","a", encoding="utf-8") as f:

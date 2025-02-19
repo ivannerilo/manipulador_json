@@ -6,5 +6,6 @@ app_name = "manipulador"
 urlpatterns = [
     path("", views.index, name="index"),
     path("<int:archive_num>", views.show_json, name="show_json"),
-    path("edit/<int:archive_num>", views.edit_json, name="edit_json")
+    path("edit/<int:archive_num>", views.edit_json, name="edit_json"),
+    path("create", views.create_json, name="create_json")
 ]

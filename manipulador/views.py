@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django import forms
 from . import util
+import json
 
 DEFAULT_ARCHIVE_NUM = 0
 
@@ -10,12 +11,19 @@ class editForm(forms.Form):
 		widget=forms.Textarea(attrs={'rows': 10, 'cols': 220}),
 	)
 
-class fileForm(forms.Form):
-    json_file = forms.fileField(upload_to="/json_files")
+# class fileForm(forms.Form):
+#     json_file = forms.FileField(upload_to="/json_files")
 
-# Create your views here.
+class createForm(forms.Form):
+    new_content = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 100, 'cols': 220})
+    )
+
 def index(request):
-    return HttpResponseRedirect(f'/{DEFAULT_ARCHIVE_NUM}')
+    return render(request, "manipulador/home.html", {
+        "DEFAULT_ARCHIVE_NUM": DEFAULT_ARCHIVE_NUM
+    })
+    # return HttpResponseRedirect(f'/{DEFAULT_ARCHIVE_NUM}')
 
 def show_json(request, archive_num):
     num = archive_num
@@ -48,9 +56,6 @@ def edit_json(request, archive_num):
                 json["messages"][i]["content"] = request.POST[f"{i}"]
         util.json_writer(json)
         return HttpResponseRedirect(f"/{archive_num}")
-        # return render(request, "manipulador/teste.html", {
-        #     "teste": json
-        # })
     
     json = util.json_reader(archive_num)
     correct_form = util.formatador_formulario(json)
@@ -58,7 +63,15 @@ def edit_json(request, archive_num):
         "correct_form": correct_form
     })
 
-
-
-
-
+def create_json(request):
+    if request.method == 'POST':
+        f = createForm(request.POST)
+        if f.is_valid():
+            data = request.POST.get("new_content")
+            json_formatado = util.json_formater(data)
+            return render(request, "manipulador/create.html", {
+                "data": json_formatado
+            })
+    return render(request, "manipulador/create.html", {
+        "form": createForm()
+    })
