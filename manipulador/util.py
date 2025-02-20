@@ -15,15 +15,12 @@ def json_file_editor(json_dict, archive_num, archive_name):
     with open(f"json_files/{archive_name}", "r") as file_read:
         json_files = list(file_read)
         with open(f"json_files/{archive_name}", "w", encoding="utf-8") as file_write:
-            # json_files[archive_num] = json_dict
-            # for json_line in json_files:
-            #     jsonzinho = json.loads(json_line.strip())
-            #     file_write.write(json.dumps(jsonzinho, ensure_ascii=False)+ '\n')
             for i in range(len(json_files)):
                 if i == archive_num:
                     file_write.write(json.dumps(json_dict, ensure_ascii=False)+ '\n')
-                jsonzinho = json.loads(json_files[i].strip())
-                file_write.write(json.dumps(jsonzinho, ensure_ascii=False)+ '\n')
+                else:
+                    jsonzinho = json.loads(json_files[i].strip())
+                    file_write.write(json.dumps(jsonzinho, ensure_ascii=False)+ '\n')
 
 
         
