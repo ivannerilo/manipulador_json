@@ -5,6 +5,8 @@ from . import util
 import json
 
 DEFAULT_ARCHIVE_NUM = 0
+DEFAULT_ARCHIVE_NAME = "jsonfile.jsonl"
+DEFAULT_WRITE_FILE = "jsonfile1.jsonl"
 
 class editForm(forms.Form):
     new_content = forms.CharField(
@@ -21,57 +23,58 @@ class createForm(forms.Form):
 
 def index(request):
     return render(request, "manipulador/home.html", {
-        "DEFAULT_ARCHIVE_NUM": DEFAULT_ARCHIVE_NUM
+        "DEFAULT_ARCHIVE_NUM": DEFAULT_ARCHIVE_NUM,
+        "DEFAULT_ARCHIVE_NAME": DEFAULT_ARCHIVE_NAME
     })
     # return HttpResponseRedirect(f'/{DEFAULT_ARCHIVE_NUM}')
 
-def show_json(request, archive_num):
-    num = archive_num
-    file_size = util.json_file_size()
+def show_json(request, archive_num, archive_name):
+    file_size = util.json_file_size(archive_name)
     if request.method == 'POST':
         match request.POST['ação']:
             case 'next':
-                num += 1
+                archive_num += 1
             case 'back':
-                num -= 1
-        if num < 0 or num > file_size -1:
-            num = 0
-        return HttpResponseRedirect(f'/{num}')
+                archive_num -= 1
+        if archive_num < 0 or archive_num > file_size -1:
+            archive_num = 0
+        return HttpResponseRedirect(f'/{archive_num}/{archive_name}')
 
-    json = util.json_reader(archive_num)
-    correct_content = util.formatador_html(json)
+    json_dict = util.json_reader(archive_num, DEFAULT_ARCHIVE_NAME) # Implementar o upload de arquivos.
+    content_list = util.formatador_html(json_dict)
     return render(request, "manipulador/index.html", {
-        "correct_content": correct_content[1:],
-        "archive_num": archive_num
+        "correct_content": content_list[1:],
+        "archive_num": archive_num,
+        "archive_name": archive_name
     })
         
 
-def edit_json(request, archive_num):
+def edit_json(request, archive_num, archive_name):
     if request.method == 'POST':
-        json = util.json_reader(archive_num)
+        json_dict = util.json_reader(archive_num, archive_name)
         for i in range(len(request.POST) - 1):
-            if isinstance(json["messages"][i]["content"], list):
-                json["messages"][i]["content"][0]["text"] = request.POST[f"{i}"]
+            if isinstance(json_dict["messages"][i]["content"], list):
+                json_dict["messages"][i]["content"][0]["text"] = request.POST[f"{i}"]
             else:
-                json["messages"][i]["content"] = request.POST[f"{i}"]
-        util.json_writer(json)
-        return HttpResponseRedirect(f"/{archive_num}")
+                json_dict["messages"][i]["content"] = request.POST[f"{i}"]
+        util.json_file_editor(json_dict, archive_num, archive_name)
+        return HttpResponseRedirect(f"/{archive_num}/{archive_name}")
     
-    json = util.json_reader(archive_num)
-    correct_form = util.formatador_formulario(json)
+    json_dict = util.json_reader(archive_num, archive_name)
+    lista_forms = util.formatador_formulario(json_dict)
     return render(request, "manipulador/edit.html", {
-        "correct_form": correct_form
+        "lista_forms": lista_forms
     })
 
 def create_json(request):
     if request.method == 'POST':
-        f = createForm(request.POST)
-        if f.is_valid():
-            data = request.POST.get("new_content")
-            json_formatado = util.json_formater(data)
-            return render(request, "manipulador/create.html", {
-                "data": json_formatado
-            })
+        form = createForm(request.POST)
+        if form.is_valid():
+            new_json_string = request.POST.get("new_content")
+            formated_json = util.json_formater(new_json_string) # json vem formatado aleluia
+            json_dict = json.loads(formated_json)
+            util.json_writer(json_dict, DEFAULT_WRITE_FILE)
+            return HttpResponseRedirect(f"/{DEFAULT_ARCHIVE_NUM}/{DEFAULT_WRITE_FILE}")
     return render(request, "manipulador/create.html", {
         "form": createForm()
     })

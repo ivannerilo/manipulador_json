@@ -1,34 +1,50 @@
 import json 
 import re
 
-def json_reader(num):
-    with open("json_files/jsonfile2.jsonl","r") as f:
-        jsonfiles = list(f)
-        jsonfile = json.loads(jsonfiles[num])
-        return jsonfile
+def json_reader(archive_num, archive_name):
+    with open(f"json_files/{archive_name}", "r") as file:
+        json_files = list(file)
+        json_file = json.loads(json_files[archive_num])
+        return json_file
 
-def json_formater(data):
-    pattern = r'response_format=\s*{\s*"type":\s*"text"\s*},?'
-    data = data.replace("messages=", '{"messages": ')
-    data = re.sub(pattern, '', data)
-    data = data.replace('tools=', '"tools": ')
-    data = data.replace('"strict": False,', "")
-    data = data + '}'
-    return data
+def json_writer(json_dict, archive_name):
+    with open(f"json_files/{archive_name}", "a", encoding="utf-8") as file:
+        file.write(json.dumps(json_dict, ensure_ascii=False)+ '\n')
 
-def json_writer(js):
-    with open("json_files/jsonfile1.jsonl","a", encoding="utf-8") as f:
-        f.write(json.dumps(js, ensure_ascii=False)+ '\n')
+def json_file_editor(json_dict, archive_num, archive_name):
+    with open(f"json_files/{archive_name}", "r") as file_read:
+        json_files = list(file_read)
+        with open(f"json_files/{archive_name}", "w", encoding="utf-8") as file_write:
+            # json_files[archive_num] = json_dict
+            # for json_line in json_files:
+            #     jsonzinho = json.loads(json_line.strip())
+            #     file_write.write(json.dumps(jsonzinho, ensure_ascii=False)+ '\n')
+            for i in range(len(json_files)):
+                if i == archive_num:
+                    file_write.write(json.dumps(json_dict, ensure_ascii=False)+ '\n')
+                jsonzinho = json.loads(json_files[i].strip())
+                file_write.write(json.dumps(jsonzinho, ensure_ascii=False)+ '\n')
 
 
-def json_file_size():
-    with open("json_files/jsonfile2.jsonl","r") as f:
+        
+def json_file_size(archive_name):
+    with open(f"json_files/{archive_name}","r") as f:
         jsonfiles = list(f)
         return len(jsonfiles)
 
-def formatador_html(json):
-    lista = []
-    for messages in json["messages"]:
+# Formatadores ----
+def json_formater(json_string):
+    pattern = r'response_format=\s*{\s*"type":\s*"text"\s*},?'
+    json_string = json_string.replace("messages=", '{"messages": ')
+    json_string = re.sub(pattern, '', json_string)
+    json_string = json_string.replace('tools=', '"tools": ')
+    json_string = json_string.replace('"strict": False,', "")
+    json_string = json_string + '}'
+    return json_string
+
+def formatador_html(json_dict):
+    lista_json_formatado = []
+    for messages in json_dict["messages"]:
         if isinstance(messages["content"], list):
             content =  f"""
                 <div>
@@ -36,7 +52,7 @@ def formatador_html(json):
                     <textarea rows="10", cols="220">{messages["content"][0]["text"]}</textarea>
                 </div>
             """
-            lista.append(content)
+            lista_json_formatado.append(content)
         else:
             content =  f"""
                 <div>
@@ -44,28 +60,28 @@ def formatador_html(json):
                     <textarea rows="10", cols="220">{messages["content"]}</textarea>
                 </div>
             """
-            lista.append(content)
-    return lista
+            lista_json_formatado.append(content)
+    return lista_json_formatado
 
 
-def formatador_formulario(json):
-    lista = []
+def formatador_formulario(json_dict):
+    lista_json_formatado = []
     id = 0
-    for messages in json["messages"]:
+    for messages in json_dict["messages"]:
         if isinstance(messages["content"], list):
             content =  f"""
                 <p><strong>{messages["role"]}</strong></p>
                 <textarea name="{id}" rows="10", cols="220">{messages["content"][0]["text"]}</textarea>
             """
-            lista.append(content)
+            lista_json_formatado.append(content)
         else:
             content =  f"""
                 <p><strong>{messages["role"]}</strong></p>
                 <textarea name="{id}" rows="10", cols="220">{messages["content"]}</textarea>
             """
-            lista.append(content)
+            lista_json_formatado.append(content)
         id += 1
-    return lista
+    return lista_json_formatado
 
 
 
