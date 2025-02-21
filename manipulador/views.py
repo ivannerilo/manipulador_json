@@ -3,10 +3,13 @@ from django.http import HttpResponseRedirect
 from django import forms
 from . import util
 import json
+from .models import FileUser
+from random import randint
 
 DEFAULT_ARCHIVE_NUM = 0
 DEFAULT_ARCHIVE_NAME = "jsonfile.jsonl"
 DEFAULT_WRITE_FILE = "jsonfile1.jsonl"
+
 
 class editForm(forms.Form):
     new_content = forms.CharField(
@@ -21,10 +24,23 @@ class createForm(forms.Form):
         widget=forms.Textarea(attrs={'rows': 100, 'cols': 220})
     )
 
+class fileForm(forms.Form):
+    new_file = forms.FileField()
+
 def index(request):
+    if request.method == 'POST':
+        uploaded_file = request.FILES["new_file"]
+        data = FileUser(
+            file = uploaded_file,
+            user_session = request.session.session_key
+        )
+        data.save()
+    user_files = FileUser.objects.filter(user_session=request.session.session_key)
     return render(request, "manipulador/home.html", {
         "DEFAULT_ARCHIVE_NUM": DEFAULT_ARCHIVE_NUM,
-        "DEFAULT_ARCHIVE_NAME": DEFAULT_ARCHIVE_NAME
+        "DEFAULT_ARCHIVE_NAME": DEFAULT_ARCHIVE_NAME,
+        "form": fileForm(),
+        "user_files": user_files
     })
     # return HttpResponseRedirect(f'/{DEFAULT_ARCHIVE_NUM}')
 
@@ -40,7 +56,7 @@ def show_json(request, archive_num, archive_name):
             archive_num = 0
         return HttpResponseRedirect(f'/{archive_num}/{archive_name}')
 
-    json_dict = util.json_reader(archive_num, DEFAULT_ARCHIVE_NAME) # Implementar o upload de arquivos.
+    json_dict = util.json_reader(archive_num, archive_name) # Implementar o upload de arquivos.
     content_list = util.formatador_html(json_dict)
     return render(request, "manipulador/index.html", {
         "correct_content": content_list[1:],
@@ -66,14 +82,15 @@ def edit_json(request, archive_num, archive_name):
         "lista_forms": lista_forms
     })
 
-def create_json(request):
+def create_json(request): #adicionar esse novo arquivo na db, não está sendo adicionado e não aparece no home
+    random_json_name = f"{request.session.session_key}.jsonl"
     if request.method == 'POST':
         form = createForm(request.POST)
         if form.is_valid():
             new_json_string = request.POST.get("new_content")
             formated_json = util.json_formater(new_json_string) # json vem formatado aleluia
             json_dict = json.loads(formated_json)
-            util.json_writer(json_dict, DEFAULT_WRITE_FILE)
+            util.json_writer(json_dict, random_json_name)
             return HttpResponseRedirect(f"/{DEFAULT_ARCHIVE_NUM}/{DEFAULT_WRITE_FILE}")
     return render(request, "manipulador/create.html", {
         "form": createForm()

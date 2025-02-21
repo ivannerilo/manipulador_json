@@ -1,20 +1,22 @@
 import json 
 import re
 
+DEFAUL_FILE_ROUTE = "json_files/files/"
+
 def json_reader(archive_num, archive_name):
-    with open(f"json_files/{archive_name}", "r") as file:
+    with open(f"{DEFAUL_FILE_ROUTE}{archive_name}", "r") as file:
         json_files = list(file)
         json_file = json.loads(json_files[archive_num])
         return json_file
 
 def json_writer(json_dict, archive_name):
-    with open(f"json_files/{archive_name}", "a", encoding="utf-8") as file:
+    with open(f"{DEFAUL_FILE_ROUTE}{archive_name}", "a", encoding="utf-8") as file:
         file.write(json.dumps(json_dict, ensure_ascii=False)+ '\n')
 
 def json_file_editor(json_dict, archive_num, archive_name):
-    with open(f"json_files/{archive_name}", "r") as file_read:
+    with open(f"{DEFAUL_FILE_ROUTE}{archive_name}", "r") as file_read:
         json_files = list(file_read)
-        with open(f"json_files/{archive_name}", "w", encoding="utf-8") as file_write:
+        with open(f"{DEFAUL_FILE_ROUTE}{archive_name}", "w", encoding="utf-8") as file_write:
             for i in range(len(json_files)):
                 if i == archive_num:
                     file_write.write(json.dumps(json_dict, ensure_ascii=False)+ '\n')
@@ -25,7 +27,7 @@ def json_file_editor(json_dict, archive_num, archive_name):
 
         
 def json_file_size(archive_name):
-    with open(f"json_files/{archive_name}","r") as f:
+    with open(f"{DEFAUL_FILE_ROUTE}{archive_name}","r") as f:
         jsonfiles = list(f)
         return len(jsonfiles)
 

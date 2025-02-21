@@ -2,10 +2,22 @@
 
 {% block body %}
     <h1>Bem vindo ao manipulador de JSONL's</h1>
-    <form>
+    <!-- <form>
         {% csrf_token %}
         {{form}}
-    </form>
+    </form> -->
     <form action="/{{DEFAULT_ARCHIVE_NUM}}/{{ DEFAULT_ARCHIVE_NAME }}"><button type="submit">Acessar Arquivo</button></form>
     <form action="/create"><button type="submit">Criar Novo Json</button></form>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{form}}
+        <button type="submit">Salvar</button>
+    </form>
+    <ul>
+        {% for file in user_files %}
+        <li>
+            <a href="/{{DEFAULT_ARCHIVE_NUM}}/{{file.file_name}}">{{file.file_name}}</a>  
+        </li>
+        {% endfor %}
+    </ul>
 {% endblock %}
