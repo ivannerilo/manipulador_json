@@ -17,6 +17,9 @@
         <form action="/edit/{{archive_num}}/{{archive_name}}">
             <button type="submit">Edit</button>
         </form>
+        <form action="/append/{{archive_name}}">
+            <button type="submit">Append</button>
+        </form>
     </div>
     {% for content in correct_content%} 
         {{content|safe}}
